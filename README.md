@@ -21,6 +21,20 @@ docker compose logs hub | grep fingerprint
 Open UDP **47800** and **47810–47873**, then give your players the address with the fingerprint, for example
 `hub.example.org#K3QF-9X2M-TV7A-0D4R`. In the game: the mod menu "Co-op" → "Server: …" → "Add an own server".
 
+## Download a Windows executable
+
+Every push to `main`, pull request, and manual workflow run builds a standalone 64-bit Windows executable. Download
+`nightcoop_hub.exe` from the `nightcoop-hub-windows-x64` artifact on the workflow run's **Actions** page.
+
+Run it from Command Prompt or PowerShell, for example:
+
+```powershell
+.\nightcoop_hub.exe 47800 --shards auto --max-clients 512 --sign-key-auto .\hub-sign.key
+```
+
+Open UDP **47800** and the shard ports (`47810`, `47811`, …) in Windows Firewall. Keep `hub-sign.key` backed up:
+players use the hub fingerprint, and changing the key changes the server identity.
+
 **The full guide** — requirements, ports, keeping the key, updates, building without Docker:
 [tools/hub/docker/README.md](tools/hub/docker/README.md).
 
