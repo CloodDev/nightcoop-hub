@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euxo pipefail
           git clone --quiet https://github.com/lsalzman/enet.git /tmp/enet
+          git -C /tmp/enet fetch --quiet --depth=1 origin "$ENET_COMMIT"
           git -C /tmp/enet checkout --quiet --detach "$ENET_COMMIT"
           test "$(git -C /tmp/enet rev-parse HEAD)" = "$ENET_COMMIT"
 
