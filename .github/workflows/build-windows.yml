@@ -30,7 +30,7 @@ jobs:
 
       - name: Build executable
         env:
-          ENET_COMMIT: 5a9c537fd464b3c6d3e55e1d3bd47588faf71b42
+          ENET_COMMIT: 2662c0de09e36f2a2030ccc2c528a3e4c9e8138a
         run: |
           set -euxo pipefail
           git clone --quiet https://github.com/lsalzman/enet.git /tmp/enet
