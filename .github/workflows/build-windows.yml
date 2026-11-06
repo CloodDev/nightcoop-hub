@@ -1,0 +1,63 @@
+name: Build Windows executable
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            mingw-w64-x86_64-gcc
+
+      - name: Build executable
+        env:
+          ENET_COMMIT: 5a9c537fd464b3c6d3e55e1d3bd47588faf71b42
+        run: |
+          set -euxo pipefail
+          git clone --quiet https://github.com/lsalzman/enet.git /tmp/enet
+          git -C /tmp/enet checkout --quiet --detach "$ENET_COMMIT"
+          test "$(git -C /tmp/enet rev-parse HEAD)" = "$ENET_COMMIT"
+
+          mkdir -p obj dist
+          for f in callbacks compress host list packet peer protocol win32; do
+            gcc -c -O2 -I/tmp/enet/include \
+              /tmp/enet/$f.c -o "obj/enet_$f.o"
+          done
+          gcc -c -O2 vendor/monocypher/monocypher.c -o obj/monocypher.o
+          for f in src/Log.cpp src/NetCrypto.cpp src/HubServer.cpp tools/hub/main.cpp; do
+            g++ -c -std=c++20 -O2 -Wall -Wextra -Wno-unused-parameter \
+              -I/tmp/enet/include "$f" -o "obj/$(basename "$f" .cpp).o"
+          done
+          g++ -o dist/nightcoop_hub.exe obj/*.o \
+            -static-libstdc++ -static-libgcc -lws2_32
+
+          ./dist/nightcoop_hub.exe --gen-sign-key smoke.key
+          ./dist/nightcoop_hub.exe --hub-public smoke.key | grep -q '^nightcoop-hub-public 1 '
+          rm smoke.key
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightcoop-hub-windows-x64
+          path: dist/nightcoop_hub.exe
+          if-no-files-found: error
+          retention-days: 30
