@@ -49,7 +49,7 @@ jobs:
               -I/tmp/enet/include "$f" -o "obj/$(basename "$f" .cpp).o"
           done
           g++ -o dist/nightcoop_hub.exe obj/*.o \
-            -static-libstdc++ -static-libgcc -lws2_32
+            -static-libstdc++ -static-libgcc -lws2_32 -lwinmm -lbcrypt
 
           ./dist/nightcoop_hub.exe --gen-sign-key smoke.key
           ./dist/nightcoop_hub.exe --hub-public smoke.key | grep -q '^nightcoop-hub-public 1 '
